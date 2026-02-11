@@ -56,19 +56,27 @@ export class ContactEnrichmentTools {
     }
 
     // For simple fields, update if provided
-    const simpleFields = ['email', 'phone', 'company', 'title', 'notes'] as const;
-    for (const field of simpleFields) {
+    // Map MCP tool field names to DEX API field names
+    const fieldMapping: Record<string, string> = {
+      email: 'email',
+      phone: 'phone',
+      company: 'company',
+      title: 'job_title',
+      notes: 'description',
+    };
+    for (const [toolField, apiField] of Object.entries(fieldMapping)) {
       // eslint-disable-next-line security/detect-object-injection
-      if (updates[field] !== undefined) {
+      if (updates[toolField] !== undefined) {
         // eslint-disable-next-line security/detect-object-injection
-        mergedUpdates[field] = updates[field] as string;
+        mergedUpdates[apiField] = updates[toolField] as string;
       }
     }
 
     // Include any other custom fields
+    const mappedToolFields = Object.keys(fieldMapping);
     for (const [key, value] of Object.entries(updates)) {
       if (
-        !simpleFields.includes(key as (typeof simpleFields)[number]) &&
+        !mappedToolFields.includes(key) &&
         key !== 'social_profiles' &&
         key !== 'tags' &&
         value !== undefined

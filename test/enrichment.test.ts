@@ -139,8 +139,8 @@ describe('Contact Enrichment Integration Tests', () => {
       assert.equal(updated.email, 'newemail@example.com');
       assert.equal(updated.phone, '555-1234');
       assert.equal(updated.company, 'New Company Inc');
-      assert.equal(updated.title, 'VP of Engineering');
-      assert.equal(updated.notes, 'Additional notes about Alice');
+      assert.equal(updated.job_title, 'VP of Engineering');
+      assert.equal(updated.description, 'Additional notes about Alice');
     });
 
     it('should throw error for non-existent contact', async () => {
