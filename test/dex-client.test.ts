@@ -190,11 +190,13 @@ describe('DexClient', () => {
         phones: [],
         contact_ids: [],
       };
-      mockAxiosInstance.put.mockResolvedValue({ data: updatedContact });
+      mockAxiosInstance.put.mockResolvedValue({
+        data: { update_contacts_by_pk: updatedContact },
+      });
 
       const result = await client.updateContact('123', updates);
 
-      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/contacts/123', updates);
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/contacts/123', { changes: updates });
       expect(result).toEqual(updatedContact);
     });
   });

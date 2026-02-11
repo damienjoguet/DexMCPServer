@@ -98,8 +98,13 @@ export class DexClient {
   }
 
   async updateContact(contactId: string, updates: Partial<DexContact>): Promise<DexContact> {
-    const response = await this.client.put<DexContact>(`/contacts/${contactId}`, updates);
-    return response.data;
+    interface UpdateContactResponse {
+      update_contacts_by_pk: DexContact;
+    }
+    const response = await this.client.put<UpdateContactResponse>(`/contacts/${contactId}`, {
+      changes: updates,
+    });
+    return response.data.update_contacts_by_pk;
   }
 
   async deleteContact(contactId: string): Promise<void> {
