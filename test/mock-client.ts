@@ -97,17 +97,17 @@ export class MockAxiosClient {
       };
     }
 
-    // GET /contacts/:id
+    // GET /contacts/:id — API returns { contacts: [...] }
     const contactMatch = url.match(/^\/contacts\/(.+)$/);
     if (contactMatch) {
       const contactId = contactMatch[1];
       const contact = mockContacts.find((c: any) => c.id === contactId);
 
       if (!contact) {
-        throw new Error(`Dex API error: 404 - {"error":"Contact not found"}`);
+        return { data: { contacts: [] } };
       }
 
-      return { data: contact };
+      return { data: { contacts: [contact] } };
     }
 
     throw new Error(`Mock GET not implemented for: ${url}`);
@@ -165,18 +165,21 @@ export class MockAxiosClient {
       };
     }
 
-    // POST /contacts (create contact)
+    // POST /contacts (create contact) — API expects { contact: {...} }
     if (url === '/contacts') {
+      const contactData = data.contact || data;
       const newContact = {
         id: `contact-${Date.now()}`,
-        ...data,
+        ...contactData,
+        emails: contactData.emails || [],
+        phones: contactData.phones || [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
       mockContacts.push(newContact);
 
-      return { data: newContact };
+      return { data: { insert_contacts_one: newContact } };
     }
 
     throw new Error(`Mock POST not implemented for: ${url}`);
@@ -230,6 +233,25 @@ export class MockAxiosClient {
       return { data: { update_contacts_by_pk: mockContacts[contactIndex] } };
     }
 
+    // PUT /timeline_items/:id (update note)
+    const timelineMatch = url.match(/^\/timeline_items\/(.+)$/);
+    if (timelineMatch) {
+      const noteId = timelineMatch[1];
+      const noteIndex = mockTimelineItems.findIndex((n: any) => n.id === noteId);
+
+      if (noteIndex === -1) {
+        throw new Error(`Dex API error: 404 - {"error":"Note not found"}`);
+      }
+
+      const changes = data.changes || data;
+      mockTimelineItems[noteIndex] = {
+        ...mockTimelineItems[noteIndex],
+        ...changes,
+      };
+
+      return { data: { update_timeline_items_by_pk: mockTimelineItems[noteIndex] } };
+    }
+
     throw new Error(`Mock PUT not implemented for: ${url}`);
   }
 
@@ -259,6 +281,20 @@ export class MockAxiosClient {
       }
 
       mockReminders.splice(reminderIndex, 1);
+      return { data: null };
+    }
+
+    // DELETE /timeline_items/:id
+    const timelineMatch = url.match(/^\/timeline_items\/(.+)$/);
+    if (timelineMatch) {
+      const noteId = timelineMatch[1];
+      const noteIndex = mockTimelineItems.findIndex((n: any) => n.id === noteId);
+
+      if (noteIndex === -1) {
+        throw new Error(`Dex API error: 404 - {"error":"Note not found"}`);
+      }
+
+      mockTimelineItems.splice(noteIndex, 1);
       return { data: null };
     }
 
